@@ -1,5 +1,6 @@
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -33,7 +34,6 @@ public class Client {
             bufferedWriter = new BufferedWriter(outputStreamWriter);
 
             while (true) {
-                JSONParser parser = new JSONParser();
 
                 String message = userInput();
 
@@ -42,27 +42,11 @@ public class Client {
                 bufferedWriter.newLine();
                 bufferedWriter.flush();
 
-                //Hämta respons från server
                 String resp = bufferedReader.readLine();
 
-                //Hämtar respons från server
-                JSONObject serverRespons = (JSONObject) parser.parse(resp);
+                //Anropa openRespons metod med server respons
+                openRespons(resp);
 
-                //Kollar om respons lyckas
-                if ("200".equals(serverRespons.get("httpStatusCode").toString())){
-                    //TODO Kolla vad som har returnerats
-
-                    //Bygger upp ett JSON-objekt av den returnerade datan
-                    JSONObject data = (JSONObject) parser.parse((String) serverRespons.get("data"));
-                    Set<String> keys = data.keySet();
-
-                    for (String x : keys) {
-                        JSONObject person = (JSONObject) data.get(x);
-
-                        //Skriv ut namn på person
-                        System.out.println(person.get("name"));
-                    }
-                }
                 //Avsluta om användaren skriver quit
                 //if (message.equalsIgnoreCase("quit")) break;
             }
@@ -96,6 +80,7 @@ public class Client {
     static String userInput(){
         //Steg 1. Skriv ut en meny för användaren
         System.out.println("1. Hämta data om alla personer");
+        System.out.println("2. Hämta data om person ett");
 
         //Steg 2. Låta användaren göra ett val
         Scanner sc = new Scanner(System.in);
@@ -108,7 +93,16 @@ public class Client {
             case "1": {
                 //Skapa JSON objekt för att hämta data om alla personer. Stringifiera objektet och returnerar det
                 JSONObject jsonReturn = new JSONObject();
-                jsonReturn.put("httpURL", "persons");
+                jsonReturn.put("httpURL", "allPersons");
+                jsonReturn.put("httpMethod", "get");
+
+                //Returnera JSON objekt
+                return jsonReturn.toJSONString();
+            }
+            case "2": {
+                //Skapa JSON objekt för att hämta data om alla personer. Stringifiera objektet och returnerar det
+                JSONObject jsonReturn = new JSONObject();
+                jsonReturn.put("httpURL", "personOne");
                 jsonReturn.put("httpMethod", "get");
 
                 //Returnera JSON objekt
@@ -116,5 +110,38 @@ public class Client {
             }
         }
         return "Error";
+    }
+
+    static String openRespons(String resp) throws ParseException {
+
+        //Bara till för testningen
+        String testReturn = "";
+
+        //Init parser för att parsa till JSON
+        JSONParser parser = new JSONParser();
+
+        JSONObject serverRespons = (JSONObject) parser.parse(resp);
+
+        //Kollar om respons lyckas
+        if ("200".equals(serverRespons.get("httpStatusCode").toString())){
+
+            //Bygger upp ett JSON-objekt av den returnerade data
+            JSONObject data = (JSONObject) parser.parse((String) serverRespons.get("data"));
+            Set<String> keys = data.keySet();
+
+            System.out.println(serverRespons);
+
+            for (String x : keys) {
+                JSONObject person = (JSONObject) data.get(x);
+
+                //Skriv ut namn på person
+                System.out.println(person.get("name"));
+
+                //Bara till för testningen
+                testReturn += person.get("name");
+            }
+        }
+        //Bara till för testningen
+        return testReturn;
     }
 }
