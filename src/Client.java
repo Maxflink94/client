@@ -112,10 +112,7 @@ public class Client {
         return "Error";
     }
 
-    static String openRespons(String resp) throws ParseException {
-
-        //Bara till för testningen
-        String testReturn = "";
+    static void openRespons(String resp) throws ParseException {
 
         //Init parser för att parsa till JSON
         JSONParser parser = new JSONParser();
@@ -137,11 +134,7 @@ public class Client {
                 //Skriv ut namn på person
                 System.out.println(person.get("name"));
 
-                //Bara till för testningen
-                testReturn += person.get("name");
             }
         }
-        //Bara till för testningen
-        return testReturn;
     }
 }
