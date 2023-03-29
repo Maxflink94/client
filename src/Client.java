@@ -20,6 +20,8 @@ public class Client {
         BufferedReader bufferedReader = null;
         BufferedWriter bufferedWriter = null;
 
+        Scanner sc = new Scanner(System.in);
+
         //Starta klienten
         try {
             //Alla portar över 1024 är (oftast) fria
@@ -35,6 +37,7 @@ public class Client {
 
             while (true) {
 
+                //Meddelandet som ska skickas till servern
                 String message = userInput();
 
                 //Skicka meddelande till server
@@ -45,10 +48,28 @@ public class Client {
                 String resp = bufferedReader.readLine();
 
                 //Anropa openRespons metod med server respons
-                openRespons(resp);
+                JSONObject persons = openRespons(resp);
 
+                String val = sc.nextLine();
+                int number = Integer.parseInt(val);
+                Set<String> keys = persons.keySet();
+
+                if (number != 1 && number <= 4){
+                String p = "p" + number;
+                JSONObject person = (JSONObject) persons.get(p);
+                System.out.println(person.get("name") + ", " + person.get("favoriteColor") + ", " + person.get("age"));
+
+                } else if (number == 1){
+                    for (String x : keys) {
+                        JSONObject person = (JSONObject) persons.get(x);
+
+                        //Skriv ut namn på person
+                        System.out.println(person.get("name"));
+                }
+                }
                 //Avsluta om användaren skriver quit
-                //if (message.equalsIgnoreCase("quit")) break;
+                if (message.equalsIgnoreCase("Exit"))
+                    break;
             }
         } catch (Exception e) {
             System.out.println(e);
@@ -81,38 +102,23 @@ public class Client {
         //Steg 1. Skriv ut en meny för användaren
         System.out.println("1. Hämta data om alla personer");
         System.out.println("2. Hämta data om person ett");
+        System.out.println("3. Hämta data om person två");
+        System.out.println("4. Hämta data om person tre");
 
         //Steg 2. Låta användaren göra ett val
-        Scanner sc = new Scanner(System.in);
         System.out.print("Skriv in ditt menyval: ");
 
-        String val = sc.nextLine();
+        //Skapa JSON objekt för att hämta data om alla personer. Stringifiera objektet och returnerar det
+        JSONObject jsonReturn = new JSONObject();
+        jsonReturn.put("httpURL", "allPersons");
+        jsonReturn.put("httpMethod", "get");
 
-        //Steg 3. Bearbeta användarens val
-        switch (val){
-            case "1": {
-                //Skapa JSON objekt för att hämta data om alla personer. Stringifiera objektet och returnerar det
-                JSONObject jsonReturn = new JSONObject();
-                jsonReturn.put("httpURL", "allPersons");
-                jsonReturn.put("httpMethod", "get");
+        //Returnera JSON objekt
+        return jsonReturn.toJSONString();
 
-                //Returnera JSON objekt
-                return jsonReturn.toJSONString();
-            }
-            case "2": {
-                //Skapa JSON objekt för att hämta data om alla personer. Stringifiera objektet och returnerar det
-                JSONObject jsonReturn = new JSONObject();
-                jsonReturn.put("httpURL", "personOne");
-                jsonReturn.put("httpMethod", "get");
-
-                //Returnera JSON objekt
-                return jsonReturn.toJSONString();
-            }
-        }
-        return "Error";
     }
 
-    static void openRespons(String resp) throws ParseException {
+    static JSONObject openRespons(String resp) throws ParseException {
 
         //Init parser för att parsa till JSON
         JSONParser parser = new JSONParser();
@@ -124,17 +130,9 @@ public class Client {
 
             //Bygger upp ett JSON-objekt av den returnerade data
             JSONObject data = (JSONObject) parser.parse((String) serverRespons.get("data"));
-            Set<String> keys = data.keySet();
 
-            System.out.println(serverRespons);
-
-            for (String x : keys) {
-                JSONObject person = (JSONObject) data.get(x);
-
-                //Skriv ut namn på person
-                System.out.println(person.get("name"));
-
-            }
+            return data;
         }
+        return null;
     }
 }
